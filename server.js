@@ -4,19 +4,11 @@ const connectDb = require("./database/connect");
 const routeNotFound = require("./middlewares/not-found");
 const globalErrorHandler = require("./middlewares/global-error");
 const app = express();
+const UserRouter = require("./routes/user");
 const PORT = process.env.NODE_PORT;
 const MONGO_URL = process.env.DATABASE_URL;
-
-app.get("/", (req, res, next) => {
-  try {
-    const string = "hello user";
-    string = string.map((ele) => ele);
-    return res.send("Hello World!");
-  } catch (error) {
-    next(error);
-  }
-});
-
+app.use(express.json())
+app.use("/api/v1/auth", UserRouter);
 app.all("*", routeNotFound);
 app.use(globalErrorHandler);
 const start = async () => {
