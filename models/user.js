@@ -3,7 +3,10 @@ const { email_regex } = require("../utils/regex");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const AppError = require("../utils/appError");
-const { handleOtpGenerate } = require("../helper/helper");
+const {
+  handleOtpGenerate,
+  remainingTimeFromCurrent,
+} = require("../helper/helper");
 const { otpExpireMilliSeconds } = require("../helper/constant");
 const Email = require("../utils/email");
 const { StatusCodes } = require("http-status-codes");
@@ -88,15 +91,12 @@ UserModel.methods.generateOtp = async function (next) {
   const otpExpiry = new Date(this.otpExpiresAt).getTime();
 
   if (this.otpExpiresAt && otpExpiry > Date.now()) {
-
-    const remainingTime = Math.ceil((otpExpiry - Date.now()) / 1000);
-    const seconds = remainingTime % 60;
-    const minutes = Math.floor(remainingTime / 60);
+    const { seconds, minutes } = remainingTimeFromCurrent(otpExpiry);
     return next(
       new AppError(
         `Otp already sent. Please wait ${
           minutes ? `${minutes} mins and ` : ""
-        } ${seconds} seconds before requesting for another!`,
+        }${seconds} seconds before requesting for another!`,
         StatusCodes.CONFLICT
       )
     );
