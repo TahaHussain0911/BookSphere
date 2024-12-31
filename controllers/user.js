@@ -45,7 +45,30 @@ const handleLogin = catchAsync(async (req, res, next) => {
     token,
   });
 });
+const handleOtpSend = catchAsync(async (req, res, next) => {
+  const { email } = req.body;
+  console.log(email, "email");
+
+  if (!email) {
+    return next(new AppError("Email is required", StatusCodes.BAD_REQUEST));
+  }
+  const user = await User.findOne({ email }).select("+otpExpiresAt +otp");
+
+  if (!user) {
+    return next(new AppError("User doesnot exists!", StatusCodes.NOT_FOUND));
+  }
+  await user.generateOtp(next);
+  await user.save();
+  return res.status(StatusCodes.OK).json({
+    msg: "Otp send to your email!",
+  });
+});
+const handleVerifyOtp = catchAsync(async (req, res, next) => {});
+const handleResetPassword = catchAsync(async (req, res, next) => {});
 module.exports = {
   handleLogin,
   handleSignup,
+  handleOtpSend,
+  handleVerifyOtp,
+  handleResetPassword,
 };
