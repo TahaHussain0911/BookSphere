@@ -1,4 +1,5 @@
 const otpGenerator = require("otp-generator");
+const slugify = require("slugify");
 const handleOtpGenerate = () => {
   return otpGenerator.generate(6, {
     lowerCaseAlphabets: false,
@@ -15,7 +16,15 @@ const remainingTimeFromCurrent = (timeInMilli) => {
     minutes,
   };
 };
+const generateSlug = (name) => {
+  return slugify(name, {
+    replacement: "-",
+    lower: true,
+    strict: true,
+  });
+};
 module.exports = {
   handleOtpGenerate,
+  generateSlug,
   remainingTimeFromCurrent,
 };
