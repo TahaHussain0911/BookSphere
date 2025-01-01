@@ -14,6 +14,9 @@ const handleValidateError = (err) => {
   const message = `Invalid data: ${errors.join(". ")}`;
   return new AppError(message, StatusCodes.BAD_REQUEST);
 };
+const handleJWTInvalid = () => {
+  return new AppError("Invalid Token! Login again", StatusCodes.UNAUTHORIZED);
+};
 const globalErrorHandler = (err, req, res) => {
   if (req.originalUrl.startsWith("/api")) {
     if (err.isOperational) {
@@ -48,6 +51,9 @@ module.exports = (err, req, res, next) => {
   }
   if (error.name === "ValidationError") {
     error = handleValidateError(error);
+  }
+  if (error.name === "JsonWebTokenError") {
+    error = handleJWTInvalid();
   }
   globalErrorHandler(error, req, res);
 };

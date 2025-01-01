@@ -13,6 +13,14 @@ const handleAuthorize = catchAsync(async (req, res, next) => {
   const userExists = await User.findById(user?.userId).select(
     "+passwordChangedAt"
   );
+  if (!userExists) {
+    return next(
+      new AppError(
+        "Invalid Token. Please login again!",
+        StatusCodes.UNAUTHORIZED
+      )
+    );
+  }
   const passwordChangeInSeconds = Math.floor(
     new Date(userExists?.passwordChangedAt).getTime() / 1000
   );
@@ -20,7 +28,10 @@ const handleAuthorize = catchAsync(async (req, res, next) => {
   // which is issued at of token
   if (user?.iat < passwordChangeInSeconds) {
     return next(
-      new AppError("Password has been recently changed. Please login again!")
+      new AppError(
+        "Password has been recently changed. Please login again!",
+        StatusCodes.UNAUTHORIZED
+      )
     );
   }
   // check if token is not expired

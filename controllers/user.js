@@ -172,6 +172,77 @@ const handleResetPassword = catchAsync(async (req, res, next) => {
     msg: "Your password has been reset!",
   });
 });
+const handleGetUser = catchAsync(async (req, res, next) => {
+  const { userId } = req.user;
+  const user = await User.findById(userId);
+  if (!user) {
+    return next(
+      new AppError("Not Authorized. Please login!", StatusCodes.UNAUTHORIZED)
+    );
+  }
+  return res.status(StatusCodes.OK).json({
+    data: user,
+  });
+});
+const handleUpdateUser = catchAsync(async (req, res, next) => {
+  const { userId } = req.user;
+  const { name, contact } = req.body;
+  const params = {
+    ...(name && { name }),
+    ...(contact && { contact }),
+    ...(req?.file?.filename && { photo: req?.file?.filename }),
+  };
+  const user = await User.findByIdAndUpdate(userId, params, {
+    new: true,
+    runValidators: true,
+  });
+  if (!user) {
+    return next(
+      new AppError("Not Authorized. Please login!", StatusCodes.UNAUTHORIZED)
+    );
+  }
+  res.status(StatusCodes.OK).json({
+    data: user,
+  });
+});
+const handleUpdatePassword = catchAsync(async (req, res, next) => {
+  const { userId } = req.user;
+  const { currentPassword, newPassword, confirmNewPassword } = req.body;
+  const user = await User.findById(userId).select(
+    "+password +passwordChangedAt"
+  );
+  const params = {
+    currentPassword,
+    newPassword,
+    confirmNewPassword,
+  };
+  for (let key in params) {
+    if (!params[key] || params[key].length < 8) {
+      return next(new AppError(`${key}: must be of atleast 8 characters`));
+    }
+  }
+  const isPrevPasswordCorrect = await user.comparePassword(currentPassword);
+  if (!isPrevPasswordCorrect) {
+    return next(
+      new AppError("Current password is not correct", StatusCodes.BAD_REQUEST)
+    );
+  }
+  if (newPassword !== confirmNewPassword) {
+    return next(
+      new AppError(
+        "New and confirm passwords donot match!",
+        StatusCodes.BAD_REQUEST
+      )
+    );
+  }
+  user.password = newPassword;
+  await user.save();
+  const token = await user.createToken();
+  res.status(StatusCodes.OK).json({
+    msg: "Password updated successfully!",
+    token,
+  });
+});
 module.exports = {
   handleLogin,
   handleSignup,
@@ -179,4 +250,7 @@ module.exports = {
   handleVerifyOtp,
   handleResendOtp,
   handleResetPassword,
+  handleGetUser,
+  handleUpdateUser,
+  handleUpdatePassword,
 };

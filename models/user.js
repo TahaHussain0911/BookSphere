@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-const { email_regex } = require("../utils/regex");
+const { email_regex, phone_regex } = require("../utils/regex");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const AppError = require("../utils/appError");
@@ -21,6 +21,16 @@ const UserModel = mongoose.Schema(
     photo: {
       type: String,
       default: "default-user.png",
+    },
+    contact: {
+      type: String,
+      validate: {
+        validator: (value) => {
+          if (!value) return true;
+          return phone_regex.test(value);
+        },
+        message: (props) => `${props.value} is not a valid phone number`,
+      },
     },
     email: {
       type: String,
@@ -45,6 +55,7 @@ const UserModel = mongoose.Schema(
     otpVerified: {
       type: Boolean,
       default: false,
+      select: false,
     },
     otpExpiresAt: {
       type: String,
