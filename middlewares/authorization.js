@@ -46,7 +46,7 @@ const handleAuthorize = catchAsync(async (req, res, next) => {
 });
 const handleAuthorizeAdmin = catchAsync(async (req, res, next) => {
   const { role } = req.user;
-  if (role !== "admin") {
+  if (role !== "Admin") {
     return next(
       new AppError(
         "Unauthorized! Only admins are allowed to access this.",

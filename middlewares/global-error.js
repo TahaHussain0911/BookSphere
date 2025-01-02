@@ -2,13 +2,15 @@ const { StatusCodes } = require("http-status-codes");
 const AppError = require("../utils/appError");
 
 const handleDuplicateFields = (err, req, res) => {
-  const errValue = err.errmsg.match(/(["'])(\\?.)*?\1/)[0];
+  const errorMsg = err?.errorResponse?.errmsg || err?.errmsg;
+
+  const errValue = errorMsg?.match(/(["'])(\\?.)*?\1/)[0];
   const message = `Duplicate field value: ${errValue}. Please use another value`;
   return new AppError(message, StatusCodes.BAD_REQUEST);
 };
 
 const handleValidateError = (err) => {
-  console.log(Object.values(err.errors), "validate err");
+  console.log(Object.values(err), "validate err");
 
   const errors = Object.values(err.errors).map((er) => er.message);
   const message = `Invalid data: ${errors.join(". ")}`;
@@ -45,8 +47,8 @@ module.exports = (err, req, res, next) => {
   let error = { ...err };
   error.message = err.message;
   error.name = err.name;
-  console.log(error, "err operational");
   if (error.code === 11000) {
+    console.log(error, "err operational");
     error = handleDuplicateFields(error);
   }
   if (error.name === "ValidationError") {
