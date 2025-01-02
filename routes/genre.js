@@ -12,9 +12,8 @@ const {
 } = require("../controllers/genre");
 const router = express.Router();
 
-router.use([handleAuthorize, handleAuthorizeAdmin]);
-
 router.get("/", getGenres).get("/:slug", getSingleGenre);
+router.use([handleAuthorize, handleAuthorizeAdmin]);
 router.post("/", createGenre);
 router.patch("/", updateGenre);
 router.delete("/:id", deleteGenre);

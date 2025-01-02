@@ -3,8 +3,9 @@ const Genre = require("../models/genre");
 const catchAsync = require("../utils/catchAsync");
 const AppError = require("../utils/appError");
 const user = require("../models/user");
+const SubGenre = require("../models/sub-genre");
 
-const getGenres = catchAsync(async (req, res, next) => {
+const getGenres = catchAsync(async (req, res, next) => {  
   let query = {};
   const { search, page = 1, limit = 10 } = req.query;
   if (search) {
@@ -16,6 +17,7 @@ const getGenres = catchAsync(async (req, res, next) => {
   const allGenre = await Genre.find(query)
     .skip((page - 1) * limit)
     .limit(parseInt(limit));
+
   res.status(StatusCodes.OK).json({
     data: allGenre,
   });
@@ -54,6 +56,17 @@ const updateGenre = catchAsync(async (req, res, next) => {
 });
 const deleteGenre = catchAsync(async (req, res, next) => {
   const { id } = req.params;
+  const subGenreExists = await SubGenre.findOne({
+    genre: id,
+  });
+  if (subGenreExists) {
+    return next(
+      new AppError(
+        "Delete all sub genre against this genre. To delete this!",
+        StatusCodes.NOT_FOUND
+      )
+    );
+  }
   const genre = await Genre.findByIdAndDelete(id);
   if (!genre) {
     return next(new AppError("Genre not found!", StatusCodes.NOT_FOUND));

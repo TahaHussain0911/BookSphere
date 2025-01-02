@@ -5,7 +5,7 @@ const routeNotFound = require("./middlewares/not-found");
 const globalErrorHandler = require("./middlewares/global-error");
 const app = express();
 const UserRouter = require("./routes/user");
-const GenreRouter = require("./models/genre");
+const GenreRouter = require("./routes/genre");
 const PORT = process.env.NODE_PORT;
 const MONGO_URL = process.env.DATABASE_URL;
 app.use(express.json());

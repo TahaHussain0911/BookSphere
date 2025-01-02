@@ -1,5 +1,7 @@
 const otpGenerator = require("otp-generator");
 const slugify = require("slugify");
+const ObjectId = require("mongodb");
+
 const handleOtpGenerate = () => {
   return otpGenerator.generate(6, {
     lowerCaseAlphabets: false,
@@ -23,8 +25,14 @@ const generateSlug = (name) => {
     strict: true,
   });
 };
+const transformObjectId = (id) => {
+  const object_id = new ObjectId(id);
+  return object_id;
+};
+
 module.exports = {
   handleOtpGenerate,
   generateSlug,
   remainingTimeFromCurrent,
+  transformObjectId,
 };
